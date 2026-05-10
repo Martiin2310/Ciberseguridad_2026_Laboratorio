@@ -221,8 +221,101 @@ Finalmente se volvió a ejecutar Hydra. Aunque la contraseña era correcta, el a
 
 ---
 
+# Lab 3 - Protocolos de Comunicación Seguros
+
+## Objetivo
+
+Analizar tráfico inseguro mediante Wireshark y posteriormente aplicar técnicas de protección utilizando túneles SSH para evitar la visualización de información sensible en texto plano.
+
+---
+
+## Captura de tráfico HTTP inseguro
+
+Se realizó una captura de tráfico utilizando Wireshark mientras se enviaban credenciales mediante HTTP.
+
+El objetivo fue demostrar cómo un atacante puede visualizar información sensible cuando las comunicaciones no están cifradas.
+
+![Wireshark HTTP](Img-Ciberseguridad/18_wireshark_http_texto_plano.jpg)
+
+En Wireshark fue posible observar credenciales y datos transmitidos en texto plano utilizando el filtro:
+
+```bash
+http.request.method == "POST"
+```
+
+---
+
+## Implementación de túnel SSH
+
+Para proteger el tráfico se implementó un túnel SSH.
+
+Primero se obtuvo la dirección IP del contenedor Docker mediante el siguiente comando:
+
+```bash
+sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ID_DEL_CONTENEDOR
+```
+
+![IP Docker](Img-Ciberseguridad/19_obtencion_ip_contenedor_docker.jpg)
+
+---
+
+## Activación del servicio SSH
+
+Posteriormente se habilitó e inició el servicio SSH.
+
+```bash
+sudo systemctl enable ssh
+sudo systemctl start ssh
+```
+
+Luego se creó el túnel SSH:
+
+```bash
+ssh -L 8080:172.18.0.2:3000 usuario@localhost
+```
+
+Este comando permitió redirigir el tráfico local mediante una conexión cifrada.
+
+---
+
+## Acceso mediante túnel seguro
+
+Después de establecer el túnel se accedió al sitio web desde:
+
+```bash
+http://localhost:8080
+```
+
+![Sitio mediante túnel](Img-Ciberseguridad/20_acceso_web_tunel_ssh.jpg)
+
+---
+
+## Envío de información protegida
+
+Se ingresaron nuevamente los datos mediante la conexión protegida por SSH.
+
+![Formulario seguro](Img-Ciberseguridad/21_envio_datos_tunel_seguro.jpg)
+
+---
+
+## Verificación del tráfico cifrado
+
+Finalmente se volvió a analizar el tráfico utilizando Wireshark.
+
+A diferencia de la prueba anterior, los datos ya no podían visualizarse en texto plano, demostrando que el túnel SSH protegió correctamente la información transmitida.
+
+![Tráfico cifrado](Img-Ciberseguridad/22_wireshark_trafico_cifrado.jpg)
+
+---
+
 # Conclusión
 
-Los laboratorios permitieron comprender la importancia de la criptografía, la integridad de datos y la autenticación multifactor en entornos reales de ciberseguridad.
+Durante los laboratorios se trabajó con distintos escenarios reales de ciberseguridad relacionados con criptografía, integridad de datos, autenticación multifactor y protección de comunicaciones.
 
-Además, se comprobó cómo herramientas ofensivas como Hydra pueden ser mitigadas mediante buenas prácticas de seguridad y configuraciones adecuadas en servicios críticos como SSH.
+En el Lab 1 se comprobó cómo las firmas digitales permiten detectar modificaciones en archivos críticos.
+
+En el Lab 2 se realizó un ataque de fuerza bruta utilizando Hydra y posteriormente se fortaleció la seguridad mediante autenticación multifactor (MFA).
+
+Finalmente, en el Lab 3 se demostró la diferencia entre tráfico HTTP inseguro y tráfico protegido mediante túneles SSH, comprobando el funcionamiento del cifrado en la protección de datos sensibles.
+
+Estos laboratorios permitieron comprender tanto técnicas ofensivas como defensivas utilizadas actualmente en entornos de ciberseguridad.
