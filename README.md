@@ -1,4 +1,4 @@
-# Ciberseguridad 2026 - Laboratorios Prácticos
+# Ciberseguridad_2026_Laboratorio
 
 Instituto Profesional Santo Tomás Iquique
 
@@ -18,11 +18,13 @@ Los laboratorios tienen como objetivo comprender el funcionamiento de herramient
 
 # Entorno de Trabajo
 
-- Kali Linux (Máquina atacante)
-- Ubuntu Server (Máquina víctima)
+- Kali Linux
+- Ubuntu Server
 - OpenSSL
 - Hydra
 - Google Authenticator
+- Wireshark
+- Docker
 - SSH
 
 ---
@@ -41,7 +43,7 @@ Se creó un archivo llamado `config_bancaria.txt` utilizando la terminal de Kali
 
 ![Creación archivo](Img-Ciberseguridad/01_creacion_archivo_config_bancaria.jpg)
 
-Posteriormente se editó el contenido del archivo utilizando el editor Nano.
+Posteriormente se editó el contenido del archivo utilizando Nano.
 
 ![Edición archivo](Img-Ciberseguridad/02_edicion_archivo_config.jpg)
 
@@ -91,15 +93,13 @@ Se verificó correctamente la firma digital utilizando la llave pública.
 openssl dgst -sha256 -verify publica.pem -signature firma.bin config_bancaria.txt
 ```
 
-La verificación fue exitosa.
-
 ![Verificación correcta](Img-Ciberseguridad/06_verificacion_firma_exitosa.jpg)
 
 ---
 
-## Simulación de modificación del archivo
+## Modificación del archivo
 
-Desde la máquina atacante se modificó el contenido del archivo para alterar su integridad.
+Posteriormente se modificó el contenido del archivo para alterar su integridad.
 
 ![Archivo modificado](Img-Ciberseguridad/07_modificacion_archivo_atacante.jpg)
 
@@ -117,7 +117,7 @@ Luego de modificar el archivo, la verificación de la firma digital falló corre
 
 ## Objetivo
 
-Realizar un ataque de diccionario contra el servicio SSH utilizando Hydra y posteriormente implementar autenticación multifactor (MFA) para aumentar la seguridad del sistema.
+Realizar un ataque de diccionario contra el servicio SSH utilizando Hydra y posteriormente implementar autenticación multifactor (MFA) para fortalecer la seguridad del sistema.
 
 ---
 
@@ -215,7 +215,7 @@ sudo service ssh restart
 
 ## Verificación final
 
-Finalmente se volvió a ejecutar Hydra. Aunque la contraseña era correcta, el acceso fue bloqueado debido a la autenticación multifactor.
+Finalmente se volvió a ejecutar Hydra. Aunque la contraseña fuese correcta, el acceso fue bloqueado debido a la autenticación multifactor.
 
 ![Hydra bloqueado](Img-Ciberseguridad/17_hydra_bloqueado_mfa.jpg)
 
@@ -225,84 +225,71 @@ Finalmente se volvió a ejecutar Hydra. Aunque la contraseña era correcta, el a
 
 ## Objetivo
 
-Analizar tráfico inseguro mediante Wireshark y posteriormente aplicar técnicas de protección utilizando túneles SSH para evitar la visualización de información sensible en texto plano.
+Analizar tráfico inseguro utilizando Wireshark y posteriormente aplicar medidas de protección mediante túneles SSH para proteger la información transmitida en la red.
 
 ---
 
 ## Captura de tráfico HTTP inseguro
 
-Se realizó una captura de tráfico utilizando Wireshark mientras se enviaban credenciales mediante HTTP.
+Se realizó una captura de tráfico utilizando Wireshark mientras se enviaban credenciales mediante una conexión HTTP sin cifrado.
 
-El objetivo fue demostrar cómo un atacante puede visualizar información sensible cuando las comunicaciones no están cifradas.
+El objetivo fue demostrar cómo un atacante puede visualizar información sensible cuando las comunicaciones no utilizan mecanismos de seguridad.
 
-![Wireshark HTTP](Img-Ciberseguridad/18_wireshark_http_texto_plano.jpg)
-
-En Wireshark fue posible observar credenciales y datos transmitidos en texto plano utilizando el filtro:
+En Wireshark fue posible observar tráfico HTTP y datos transmitidos en texto plano utilizando el filtro:
 
 ```bash
 http.request.method == "POST"
 ```
 
+![Wireshark HTTP](Img-Ciberseguridad/18_wireshark_http_texto_plano.jpg)
+
 ---
 
-## Implementación de túnel SSH
+## Obtención de IP del contenedor Docker
 
-Para proteger el tráfico se implementó un túnel SSH.
-
-Primero se obtuvo la dirección IP del contenedor Docker mediante el siguiente comando:
+Para realizar el túnel SSH primero se obtuvo la dirección IP del contenedor Docker mediante el siguiente comando:
 
 ```bash
 sudo docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ID_DEL_CONTENEDOR
 ```
 
-![IP Docker](Img-Ciberseguridad/19_obtencion_ip_contenedor_docker.jpg)
+![IP contenedor Docker](Img-Ciberseguridad/19_ip_contenedor_docker.jpg)
 
 ---
 
-## Activación del servicio SSH
+## Implementación del túnel SSH
 
-Posteriormente se habilitó e inició el servicio SSH.
-
-```bash
-sudo systemctl enable ssh
-sudo systemctl start ssh
-```
-
-Luego se creó el túnel SSH:
+Posteriormente se habilitó el servicio SSH y se creó un túnel local utilizando el siguiente comando:
 
 ```bash
 ssh -L 8080:172.18.0.2:3000 usuario@localhost
 ```
 
-Este comando permitió redirigir el tráfico local mediante una conexión cifrada.
-
----
-
-## Acceso mediante túnel seguro
-
-Después de establecer el túnel se accedió al sitio web desde:
+Luego se accedió al sitio web mediante la dirección:
 
 ```bash
 http://localhost:8080
 ```
 
-![Sitio mediante túnel](Img-Ciberseguridad/20_acceso_web_tunel_ssh.jpg)
+Con esto el tráfico pasó a viajar mediante una conexión cifrada.
+
+![Página mediante túnel SSH](Img-Ciberseguridad/20_pagina_tunel_ssh.jpg)
 
 ---
 
-## Envío de información protegida
+## Envío de información mediante conexión segura
 
-Se ingresaron nuevamente los datos mediante la conexión protegida por SSH.
+Una vez creado el túnel SSH se ingresaron nuevamente los datos en el formulario web.
 
-![Formulario seguro](Img-Ciberseguridad/21_envio_datos_tunel_seguro.jpg)
+![Formulario seguro](Img-Ciberseguridad/21_formulario_tunel_seguro.jpg)
 
 ---
 
-## Verificación del tráfico cifrado
+## Verificación de tráfico cifrado
 
 Finalmente se volvió a analizar el tráfico utilizando Wireshark.
 
-A diferencia de la prueba anterior, los datos ya no podían visualizarse en texto plano, demostrando que el túnel SSH protegió correctamente la información transmitida.
+A diferencia de la prueba anterior, ya no fue posible visualizar las credenciales en texto plano, demostrando que el túnel SSH protegió correctamente la información transmitida.
 
 ![Tráfico cifrado](Img-Ciberseguridad/22_wireshark_trafico_cifrado.jpg)
 
@@ -310,12 +297,12 @@ A diferencia de la prueba anterior, los datos ya no podían visualizarse en text
 
 # Conclusión
 
-Durante los laboratorios se trabajó con distintos escenarios reales de ciberseguridad relacionados con criptografía, integridad de datos, autenticación multifactor y protección de comunicaciones.
+Durante los laboratorios se trabajó con distintas herramientas y técnicas de ciberseguridad relacionadas con criptografía, autenticación multifactor y protección de comunicaciones.
 
-En el Lab 1 se comprobó cómo las firmas digitales permiten detectar modificaciones en archivos críticos.
+En el Lab 1 se aplicaron firmas digitales y verificación de integridad utilizando OpenSSL.
 
-En el Lab 2 se realizó un ataque de fuerza bruta utilizando Hydra y posteriormente se fortaleció la seguridad mediante autenticación multifactor (MFA).
+En el Lab 2 se realizaron ataques de diccionario con Hydra y posteriormente se implementó autenticación multifactor (MFA) para fortalecer la seguridad del servicio SSH.
 
-Finalmente, en el Lab 3 se demostró la diferencia entre tráfico HTTP inseguro y tráfico protegido mediante túneles SSH, comprobando el funcionamiento del cifrado en la protección de datos sensibles.
+Finalmente, en el Lab 3 se analizó tráfico HTTP inseguro utilizando Wireshark y posteriormente se protegió la comunicación mediante túneles SSH, comprobando el funcionamiento del cifrado en la protección de datos sensibles.
 
-Estos laboratorios permitieron comprender tanto técnicas ofensivas como defensivas utilizadas actualmente en entornos de ciberseguridad.
+Estos laboratorios permitieron comprender tanto técnicas ofensivas como defensivas utilizadas actualmente en entornos reales de ciberseguridad.
