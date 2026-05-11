@@ -3,7 +3,7 @@
 Instituto Profesional Santo Tomás Iquique
 
 **Nombre:** Martín Obregón Díaz  
-**Carrera:** Ingeniería en Informática
+**Carrera:** Ingeniería en Informática  
 **Asignatura:** Ciberseguridad  
 
 ---
@@ -156,6 +156,10 @@ google-authenticator
 Luego se configuró el código QR en la aplicación móvil.
 
 ![Configuración MFA](Img-Ciberseguridad/11_configuracion_google_authenticator.jpg)
+
+Una vez configurado el autenticador, la aplicación comenzó a generar códigos temporales de verificación utilizados como segundo factor de autenticación (MFA).
+
+![Token Google Authenticator](Img-Ciberseguridad/11.2_token_google_authenticator.jpeg)
 
 ---
 
