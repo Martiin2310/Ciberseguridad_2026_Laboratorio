@@ -3,7 +3,7 @@
 Instituto Profesional Santo Tomás Iquique
 
 **Nombre:** Martín Obregón Díaz  
-**Carrera:** Ingeniería en Informática  
+**Carrera:** Ingeniería en Informática
 **Asignatura:** Ciberseguridad  
 
 ---
